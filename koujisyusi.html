@@ -299,7 +299,7 @@
     <div class="content-title-row">
       <div>
         <div class="content-title">工事収支</div>
-        <div class="content-subtitle" id="contentSubtitle">— ／ 工事番号 —</div>
+        <div class="content-subtitle" id="contentSubtitle">— ／ 物件コード —</div>
       </div>
       <div class="btn-row">
         <button class="btn-outline" onclick="downloadGenkaDaichou()"><i class="fa-solid fa-file-export" style="color:var(--primary-blue);font-size:12px;"></i> 原価台帳出力</button>
@@ -342,11 +342,6 @@
         <div class="section-label">
           <div class="section-bar"></div>
           <span class="section-title">工期情報</span>
-        </div>
-        <div class="kouki-meta">
-          <span class="kouki-meta-item">工期 <strong>153日</strong></span>
-          <span class="kouki-meta-item blue">進捗 <strong>64%</strong></span>
-          <span class="kouki-status-dot"><span class="dot"></span>進行中</span>
         </div>
       </div>
       <div class="kouki-body">
@@ -605,7 +600,7 @@
   document.getElementById('bcPropName').textContent = propName;
   document.getElementById('bcPropLink').href = backUrl;
   document.getElementById('navBack').href    = backUrl;
-  document.getElementById('contentSubtitle').textContent = propName + ' ／ 工事番号 —';
+  document.getElementById('contentSubtitle').textContent = propName + ' ／ 物件コード —';
 
   if (propertyId) {
     document.getElementById('btnEstimate').onclick = () => {
