@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>計測パレット</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'MS Gothic', 'MS ゴシック', monospace;
+      font-size: 18px;
+      background-color: rgb(240, 240, 240);
+    }
+
+    .palette-container {
+      width: 100%;
+      background-color: rgb(240, 240, 240);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      border-bottom: 1px solid rgb(209, 213, 219);
+    }
+
+    .header h2 {
+      font-size: 14px;
+      font-weight: normal;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      color: rgb(107, 114, 128);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .close-button:hover {
+      color: rgb(55, 65, 81);
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .selected-shape {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .selected-shape-label {
+      font-size: 12px;
+      color: rgb(55, 65, 81);
+    }
+
+    .orange-box {
+      background-color: rgb(249, 115, 22);
+      width: 32px;
+      height: 24px;
+      border-radius: 2px;
+    }
+
+    .table-container {
+      border: 1px solid rgb(209, 213, 219);
+      background-color: white;
+      margin-bottom: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+    }
+
+    thead tr {
+      background-color: rgb(243, 244, 246);
+      border-bottom: 1px solid rgb(209, 213, 219);
+    }
+
+    th {
+      text-align: center;
+      padding: 6px 12px;
+      font-weight: bold;
+      border-right: 1px solid rgb(209, 213, 219);
+    }
+
+    th:last-child {
+      border-right: none;
+    }
+
+    tbody {
+      background-color: white;
+    }
+
+    td {
+      padding: 6px 12px;
+      border-bottom: 1px solid rgb(229, 231, 235);
+      border-right: 1px solid rgb(209, 213, 219);
+    }
+
+    td:last-child {
+      border-right: none;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .row-light-blue {
+      background-color: rgb(217, 234, 247);
+    }
+
+    .row-selected {
+      background-color: rgb(51, 153, 255);
+      color: white;
+    }
+
+    .mode-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 8px 0;
+      border-top: 1px solid rgb(209, 213, 219);
+      border-bottom: 1px solid rgb(209, 213, 219);
+    }
+
+    .acquire-button {
+      padding: 4px 12px;
+      font-size: 12px;
+      border: 1px solid rgb(156, 163, 175);
+      border-radius: 4px;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .acquire-button:hover {
+      background-color: rgb(249, 250, 251);
+    }
+
+    .radio-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .radio-label input[type="radio"] {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="palette-container">
+    <!-- Header -->
+    <div class="header">
+      <h2>計測パレット</h2>
+      <button class="close-button" onclick="alert('閉じる')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Selected shape -->
+      <div class="selected-shape">
+        <div class="selected-shape-label">選択された図形</div>
+        <div class="orange-box"></div>
+      </div>
+
+      <!-- Data table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>値</th>
+              <th>単位</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>メーカー</td>
+              <td>04石の他一般</td>
+              <td></td>
+            </tr>
+            <tr class="row-light-blue">
+              <td>名称</td>
+              <td>砂利</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>周長</td>
+              <td>74.200</td>
+              <td>m</td>
+            </tr>
+            <tr class="row-light-blue">
+              <td>面積(2D)</td>
+              <td>35.664</td>
+              <td>m²</td>
+            </tr>
+            <tr class="row-selected">
+              <td>面積(3D)</td>
+              <td>35.664</td>
+              <td>m²</td>
+            </tr>
+            <tr>
+              <td>体積</td>
+              <td>0.000</td>
+              <td>m3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Manual/Auto mode -->
+      <div class="mode-section">
+        <button class="acquire-button">取得</button>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="mode" value="manual" checked>
+            手動
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="mode" value="auto">
+            自動
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

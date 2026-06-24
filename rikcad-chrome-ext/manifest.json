@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "RIKCAD Connector",
+  "version": "0.2",
+  "description": "OPEN EX と RIKCAD を Chrome拡張機能だけで連携。Python/EXEサーバー不要。",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "http://localhost:8767/*",
+    "http://localhost:19723/*",
+    "http://localhost:19724/*",
+    "http://localhost:19725/*",
+    "http://localhost:19726/*",
+    "http://localhost:19727/*",
+    "http://localhost:19728/*",
+    "http://localhost:19729/*",
+    "http://localhost:19730/*",
+    "http://localhost:19731/*",
+    "http://localhost:19732/*",
+    "file:///*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "RIKCAD Connector"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:8767/*",
+        "file:///*",
+        "https://*.github.io/*"
+      ],
+      "js": ["bridge-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "http://localhost:8767/*",
+        "file:///*",
+        "https://*.github.io/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["bridge-main.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

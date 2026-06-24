@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'Hiragino Sans', sans-serif;
+      width: 320px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 13px;
+    }
+
+    /* ヘッダー */
+    .header {
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: #fff;
+      padding: 12px 14px 10px;
+    }
+    .header h1 { font-size: 15px; font-weight: 700; letter-spacing: 0.3px; }
+    .header .sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+    /* ステータス */
+    .status-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+      flex-shrink: 0;
+    }
+    .dot.ok    { background: #22c55e; }
+    .dot.error { background: #ef4444; }
+    .dot.spin  { background: #f59e0b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* セクション */
+    .section { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+    .section-title {
+      font-size: 11px; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+
+    /* ページリンク */
+    .page-links { display: flex; flex-direction: column; gap: 4px; }
+    .page-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #334155;
+      text-align: left;
+      transition: background 0.12s, border-color 0.12s;
+      width: 100%;
+    }
+    .page-btn:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .page-btn .icon { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+    .page-btn .label { flex: 1; font-weight: 500; }
+    .page-btn .badge {
+      font-size: 10px; padding: 1px 5px;
+      background: #dbeafe; color: #1d4ed8;
+      border-radius: 3px;
+    }
+
+    /* フォルダ設定 */
+    .setup-row {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .setup-row input {
+      flex: 1;
+      padding: 5px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      font-size: 11px;
+      color: #334155;
+      background: #fff;
+    }
+    .setup-row input:focus { outline: none; border-color: #93c5fd; }
+    .btn-save {
+      padding: 5px 10px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-save:hover { background: #1d4ed8; }
+
+    /* 注意書き */
+    .hint {
+      font-size: 11px; color: #64748b;
+      background: #f1f5f9;
+      border-radius: 5px;
+      padding: 7px 10px;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+    .hint a { color: #2563eb; text-decoration: none; }
+    .hint a:hover { text-decoration: underline; }
+
+    /* デバッグボタン群 */
+    .dev-btns { display: flex; flex-wrap: wrap; gap: 4px; }
+    .dev-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      color: #475569;
+    }
+    .dev-btn:hover { background: #f1f5f9; }
+
+    /* 出力エリア */
+    #output {
+      margin: 8px 14px 10px;
+      background: #f1f5f9;
+      border-radius: 5px;
+      padding: 7px 10px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 11px;
+      white-space: pre-wrap;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔌 RIKCAD Connector</h1>
+    <div class="sub">OPEN EX × RIKCAD 連携ツール</div>
+  </div>
+
+  <!-- RIKCAD 接続ステータス -->
+  <div class="status-bar">
+    <div class="dot spin" id="status-dot"></div>
+    <span id="status-text">RIKCAD 接続確認中...</span>
+  </div>
+
+  <!-- ページランチャー -->
+  <div class="section" id="section-pages">
+    <div class="section-title">OPEN EX ページを開く</div>
+    <div class="page-links" id="page-links">
+      <!-- JS で生成 -->
+    </div>
+    <div class="hint" id="hint-nobase" style="display:none;">
+      ⬇ 下の「フォルダ設定」で fils フォルダのパスを設定するとリンクが使えます。
+    </div>
+  </div>
+
+  <!-- フォルダ設定 -->
+  <div class="section">
+    <div class="section-title">フォルダ設定（初回のみ）</div>
+    <div class="setup-row">
+      <input type="text" id="base-path"
+        placeholder="C:\Users\xxx\OPEN EX\.company\engineering\fils">
+      <button class="btn-save" id="btn-save">保存</button>
+    </div>
+    <div class="hint">
+      ファイルを直接開く場合は<br>
+      ① Chrome の <code>chrome://extensions/</code> を開く<br>
+      ② この拡張機能の「詳細」→「ファイルの URL へのアクセスを許可する」をON<br>
+      ③ HTML ファイルをダブルクリックで開く
+    </div>
+  </div>
+
+  <!-- RIKCAD デバッグ -->
+  <div class="section">
+    <div class="section-title">RIKCAD デバッグ</div>
+    <div class="dev-btns">
+      <button class="dev-btn" id="btn-gdl">GDL取得</button>
+      <button class="dev-btn" id="btn-qty">数量取得</button>
+      <button class="dev-btn" id="btn-sel">選択切替テスト</button>
+      <button class="dev-btn" id="btn-hl">ハイライト</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

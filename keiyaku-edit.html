@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>契約作成 - OPEN EX</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --blue:#1d6ed1; --green:#00b27d; }
+    body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif; background:#f4f7f9; color:#333; min-height:100vh; }
+
+    /* ナビバー（他ページと共通スタイル） */
+    .top-nav { height:52px; background:#fff; border-bottom:1px solid #e0e6ef; display:flex; align-items:center; padding:0 16px; gap:2px; position:sticky; top:0; z-index:100; }
+    .nav-logo { font-weight:800; font-size:15px; color:#1a1a2e; margin-right:12px; white-space:nowrap; }
+    .nav-item { display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 10px; border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; font-family:inherit; font-size:11px; color:#666; transition:all .15s; white-space:nowrap; }
+    .nav-item svg { width:16px; height:16px; }
+    .nav-item.active { color:var(--blue); border-bottom-color:var(--blue); }
+
+    /* パンくず */
+    .breadcrumb { padding:12px 28px 0; font-size:12px; color:#999; display:flex; align-items:center; gap:6px; }
+    .breadcrumb a { color:var(--blue); cursor:pointer; text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+
+    /* メインコンテンツ */
+    .page-wrap { max-width:1100px; margin:0 auto; padding:16px 28px 60px; }
+    .page-header { display:flex; align-items:center; justify-content:flex-start; gap:16px; margin-bottom:20px; }
+    .page-title { font-size:18px; font-weight:700; white-space:nowrap; }
+    .info-btns { display:flex; gap:8px; }
+    .info-btn { border:1px solid #ddd; background:#fff; border-radius:5px; padding:6px 14px; font-size:12px; font-family:inherit; cursor:pointer; display:flex; align-items:center; gap:5px; color:#555; }
+    .info-btn:hover { background:#f5f5f5; }
+
+    /* セクションカード */
+    .section-card { background:#fff; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,.07); margin-bottom:16px; padding:22px 28px; }
+    .section-title { font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; justify-content:space-between; }
+
+    /* フォームグリッド */
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 32px; }
+    .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px 24px; }
+    .form-field { display:flex; flex-direction:column; gap:5px; }
+    .form-field.span2 { grid-column:span 2; }
+    .form-field.span3 { grid-column:span 3; }
+    .field-label { font-size:11px; font-weight:600; color:#888; }
+    .field-label .req { color:#e53935; margin-left:3px; }
+    .field-value { font-size:13px; color:#333; padding:4px 0; }
+    .field-input { border:1px solid #ddd; border-radius:4px; padding:8px 10px; font-size:13px; font-family:inherit; outline:none; width:100%; }
+    .field-input:focus { border-color:var(--blue); box-shadow:0 0 0 2px rgba(29,110,209,.08); }
+    .field-input.error { border-color:#e53935; }
+    .field-hint { font-size:11px; color:#aaa; margin-top:2px; }
+    .field-select { border:1px solid #ddd; border-radius:4px; padding:8px 28px 8px 10px; font-size:13px; font-family:inherit; outline:none; width:100%; appearance:none; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23aaa'/%3E%3C/svg%3E") no-repeat right 8px center; cursor:pointer; }
+    .field-select:focus { border-color:var(--blue); }
+
+    /* 契約状況ラジオ */
+    .status-radio-group { display:flex; gap:10px; align-items:center; padding:6px 0; }
+    .status-radio-label { display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; padding:6px 16px; border:1px solid #ddd; border-radius:4px; transition:all .15s; }
+    .status-radio-label input { accent-color:var(--blue); }
+    .status-radio-label.checked-sakusei { border-color:#e65100; background:#fff3e0; color:#e65100; font-weight:600; }
+    .status-radio-label.checked-keiyaku { border-color:#2e7d32; background:#e8f5e9; color:#2e7d32; font-weight:600; }
+    .status-radio-label.checked-shicchu  { border-color:#c62828; background:#fce4ec; color:#c62828; font-weight:600; }
+
+    /* 工期 */
+    .date-range { display:flex; align-items:center; gap:8px; }
+    .date-range .field-input { flex:1; }
+    .date-sep { color:#999; font-size:13px; flex-shrink:0; }
+
+    /* 見積テーブル */
+    .est-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .est-table th { text-align:left; font-size:11px; color:#bbb; font-weight:400; padding:8px 10px; border-bottom:1px solid #eee; }
+    .est-table th.right { text-align:right; }
+    .est-table td { padding:10px; border-bottom:1px dashed #eee; vertical-align:middle; }
+    .est-table tbody tr:hover { background:#f8fbff; }
+    .est-table td.right { text-align:right; font-variant-numeric:tabular-nums; }
+    .est-reflect-btn { background:var(--blue); color:#fff; border:none; border-radius:4px; padding:3px 10px; font-size:11px; font-family:inherit; cursor:pointer; }
+    .est-reflect-btn:hover { background:#1558b0; }
+
+    /* 金額フォーム */
+    .amount-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 24px; }
+    .amount-field { display:flex; flex-direction:column; gap:5px; }
+    .amount-input-wrap { position:relative; }
+    .amount-input-wrap input { width:100%; text-align:right; padding-right:10px; border:1px solid #ddd; border-radius:4px; padding:8px 10px; font-size:14px; font-family:inherit; outline:none; font-weight:500; }
+    .amount-input-wrap input:focus { border-color:var(--blue); }
+    .amount-input-wrap input.auto { background:#f5f5f5; color:#666; }
+
+    /* フッターボタン */
+    .footer-actions { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #e0e0e0; padding:12px 28px; display:flex; justify-content:center; align-items:center; z-index:50; }
+    .btn-close { background:#fff; border:1px solid #ddd; border-radius:6px; padding:9px 28px; font-size:13px; font-family:inherit; cursor:pointer; color:#555; }
+    .btn-close:hover { background:#f5f5f5; }
+    .btn-delete { background:#fff; border:1px solid #fca5a5; border-radius:6px; padding:9px 20px; font-size:13px; font-family:inherit; cursor:pointer; color:#ef4444; position:absolute; left:28px; }
+    .btn-delete:hover { background:#fef2f2; }
+    .footer-right { display:flex; gap:12px; position:absolute; right:28px; }
+    .footer-right { position:absolute; right:28px; display:flex; gap:12px; }
+    /* カスタム確認モーダル */
+    .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:2000; justify-content:center; align-items:center; }
+    .confirm-overlay.active { display:flex; }
+    .confirm-box { background:#fff; border-radius:8px; padding:28px 32px; max-width:420px; width:90%; box-shadow:0 4px 24px rgba(0,0,0,.18); text-align:center; }
+    .confirm-msg { font-size:14px; line-height:1.7; color:#333; margin-bottom:24px; }
+    .confirm-btns { display:flex; justify-content:center; gap:12px; }
+    .confirm-yes { background:#ef4444; color:#fff; border:none; border-radius:6px; padding:9px 32px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
+    .confirm-yes:hover { background:#dc2626; }
+    .confirm-no { background:#fff; border:1px solid #ddd; border-radius:6px; padding:9px 32px; font-size:13px; font-family:inherit; cursor:pointer; color:#555; }
+    .confirm-no:hover { background:#f5f5f5; }
+    .btn-save { background:var(--blue); color:#fff; border:none; border-radius:6px; padding:9px 28px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
+    .btn-save:hover { background:#1558b0; }
+
+    /* トースト */
+    #toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); padding:10px 24px; border-radius:6px; font-size:13px; z-index:3000; opacity:0; transition:opacity .3s; pointer-events:none; color:#fff; }
+  </style>
+</head>
+<body>
+
+<!-- ナビバー -->
+<nav class="top-nav">
+  <span class="nav-logo">OPEN EX</span>
+  <button class="nav-item" onclick="navClick('bukken')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>物件</button>
+  <button class="nav-item" onclick="navClick('kokyaku')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>顧客</button>
+  <button class="nav-item" onclick="navClick('file')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>ファイル検索</button>
+  <button class="nav-item" onclick="navClick('shared')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/></svg>共有物件</button>
+  <button class="nav-item" onclick="navClick('estimate')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>見積管理</button>
+  <button class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>契約管理</button>
+  <button class="nav-item" onclick="navClick('shodan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>商談管理</button>
+  <button class="nav-item" onclick="window.location.href='schedule.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>スケジュール</button>
+  <button class="nav-item" onclick="navClick('chat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>チャット</button>
+  <button class="nav-item" onclick="navClick('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</button>
+</nav>
+
+<!-- パンくず -->
+<div class="breadcrumb">
+  <a id="bcBack" onclick="goBack()">契約管理</a>
+  <span>›</span>
+  <span id="bcPropName">—</span>
+  <span>›</span>
+  <span>契約作成</span>
+</div>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <h1 class="page-title">契約作成</h1>
+    <div class="info-btns">
+      <button class="info-btn" onclick="openInfoPanel('prop')"><i class="fa-solid fa-circle-info"></i> 物件情報</button>
+      <button class="info-btn" onclick="openInfoPanel('cust')"><i class="fa-solid fa-circle-info"></i> 顧客情報</button>
+      <button class="info-btn" onclick="openInfoPanel('shodan')"><i class="fa-solid fa-circle-info"></i> 商談情報</button>
+    </div>
+  </div>
+
+  <!-- 基本情報 -->
+  <div class="section-card">
+    <div class="form-grid">
+      <div class="form-field">
+        <div class="field-label">顧客名</div>
+        <div class="field-value" id="dispCustName">—</div>
+      </div>
+      <div class="form-field">
+        <div class="field-label">住所</div>
+        <div class="field-value" id="dispAddr"><i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:4px;font-size:11px;"></i><span id="dispAddrText">—</span></div>
+      </div>
+      <div class="form-field">
+        <div class="field-label">物件名</div>
+        <div class="field-value" id="dispPropName">—</div>
+      </div>
+      <div class="form-field">
+        <div class="field-label">現場住所</div>
+        <div class="field-value"><i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:4px;font-size:11px;"></i><span id="dispSiteAddr">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 契約情報入力 -->
+  <div class="section-card">
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">契約書名<span class="req">【必須】</span></label>
+        <input class="field-input" type="text" id="contractName" placeholder="契約書名を入力">
+        <div class="field-hint" id="contractNameId" style="font-size:11px;color:#bbb;"></div>
+      </div>
+      <div class="form-field">
+        <label class="field-label">契約状況を選択<span class="req">【必須】</span></label>
+        <div class="status-radio-group" id="statusRadioGroup">
+          <label class="status-radio-label" id="lbl-sakusei">
+            <input type="radio" name="contractStatus" value="作成中" checked onchange="updateStatusStyle()"> 作成中
+          </label>
+          <label class="status-radio-label" id="lbl-keiyaku">
+            <input type="radio" name="contractStatus" value="契約済" onchange="updateStatusStyle()"> 契約済
+          </label>
+          <label class="status-radio-label" id="lbl-shicchu">
+            <input type="radio" name="contractStatus" value="失注" onchange="updateStatusStyle()"> 失注
+          </label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="field-label">契約書かな</label>
+        <input class="field-input" type="text" id="contractNameKana" placeholder="全角ひらがな、または全角/半角カタカナ">
+        <div class="field-hint">全角ひらがな、または全角/半角カタカナ（スペース不可）で入力してください</div>
+      </div>
+      <div class="form-field">
+        <label class="field-label">契約日<span class="req">【必須】</span></label>
+        <input class="field-input" type="date" id="contractDate">
+      </div>
+      <div class="form-field">
+        <label class="field-label">担当者<span class="req">【必須】</span></label>
+        <select class="field-select" id="staffSelect">
+          <option value="">担当者を選択してください</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="field-label">予定工期</label>
+        <div class="date-range">
+          <input class="field-input" type="date" id="schedStart">
+          <span class="date-sep">—</span>
+          <input class="field-input" type="date" id="schedEnd">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 契約対象見積 -->
+  <div class="section-card">
+    <div class="section-title">
+      <span>契約対象見積</span>
+      <button class="info-btn" onclick="goEstimateList()"><i class="fa-solid fa-list"></i> 見積一覧</button>
+    </div>
+    <table class="est-table">
+      <thead><tr>
+        <th style="width:40px;">反映</th>
+        <th style="width:60px;">台帳No.</th>
+        <th style="width:160px;">見積No.</th>
+        <th>見積プラン名</th>
+        <th style="width:80px;">見積状況</th>
+        <th class="right" style="width:120px;">売上予定金額（円）</th>
+        <th class="right" style="width:110px;">原価金額（円）</th>
+        <th class="right" style="width:80px;">粗利（%）</th>
+        <th style="width:70px;">契約反映</th>
+      </tr></thead>
+      <tbody id="estTbody">
+        <tr><td colspan="9" style="text-align:center;padding:32px;color:#ccc;font-size:13px;">見積データがありません</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 金額 -->
+  <div class="section-card">
+    <div class="amount-grid">
+      <div class="amount-field">
+        <label class="field-label">請負金額（税込）<span class="req">【必須】</span></label>
+        <div class="amount-input-wrap">
+          <input type="number" id="amountTax" placeholder="0" oninput="calcAmounts('tax')">
+        </div>
+      </div>
+      <div class="amount-field">
+        <label class="field-label">請負金額（税抜）<span class="req">【必須】</span></label>
+        <div class="amount-input-wrap">
+          <input type="number" id="amountExTax" placeholder="0" oninput="calcAmounts('ex')">
+        </div>
+      </div>
+      <div class="amount-field">
+        <label class="field-label">消費税額<span class="req">【必須】</span></label>
+        <div class="amount-input-wrap">
+          <input type="number" id="taxAmount" class="auto" placeholder="0" readonly>
+        </div>
+      </div>
+      <div class="amount-field">
+        <label class="field-label">税率<span class="req">【必須】</span></label>
+        <div class="amount-input-wrap" style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="taxRate" value="10" style="width:80px;text-align:right;" oninput="calcAmounts('rate')">
+          <span style="font-size:13px;color:#555;">%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 契約備考 -->
+  <div class="section-card">
+    <div class="form-field">
+      <label class="field-label">契約備考</label>
+      <textarea class="field-input" id="contractNote" placeholder="詳細" rows="5" style="resize:vertical;"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- フッター -->
+<div class="footer-actions">
+  <button class="btn-delete" onclick="deleteContract()"><i class="fa-solid fa-trash-can" style="margin-right:5px;font-size:12px;"></i>削除</button>
+  <button class="btn-close" onclick="goBack()">閉じる</button>
+  <div class="footer-right">
+    <button class="btn-save" onclick="saveContract()">保存</button>
+    <button class="btn-save" style="background:#00b27d;" onclick="outputContract()">契約書出力</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL = 'https://kkxnyszblaveglvlvwie.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtreG55c3pibGF2ZWdsdmx2d2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0Nzk5NTUsImV4cCI6MjA4OTA1NTk1NX0.lYWBM0r_NQ1XFWUwKQmiXq3hKRjwHejYcpMjueGUlSs';
+const API = SB_URL + '/rest/v1';
+const HEADERS = {
+  'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json', 'Prefer': 'return=representation'
+};
+
+const p = new URLSearchParams(location.search);
+const PROPERTY_ID = p.get('property_id') || '';
+const BACK_URL    = p.get('back')        || 'index.html';
+const CONTRACT_ID = p.get('contract_id') || null;
+
+let currentProp     = null;
+let currentContract = null;
+let allEstimates    = [];
+let checkedEstIds   = new Set();
+let initialAmount   = null; // deal_infoの元の売上予定金額
+
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'error' ? '#c62828' : '#388e3c';
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2800);
+}
+
+function goBack() { window.location.href = BACK_URL; }
+function navClick(key) { sessionStorage.setItem('openex_nav_target', key); window.location.href = 'index.html'; }
+function goEstimateList() {
+  window.location.href = `estimate-list.html?property_id=${encodeURIComponent(PROPERTY_ID)}&back=${encodeURIComponent(location.href)}`;
+}
+
+// ── 初期化 ──
+(async function init() {
+  if (!PROPERTY_ID) { showToast('物件IDが指定されていません', 'error'); return; }
+
+  // 今日の日付をデフォルト
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('contractDate').value = today;
+
+  try {
+    // 物件取得
+    const pr = await fetch(`${API}/properties?id=eq.${PROPERTY_ID}`, { headers: HEADERS });
+    const props = await pr.json();
+    currentProp = props[0] || null;
+    if (currentProp) {
+      document.getElementById('bcPropName').textContent = currentProp.name || '—';
+      document.getElementById('dispPropName').textContent = currentProp.name || '—';
+      document.getElementById('dispAddrText').textContent = currentProp.address || '—';
+      document.getElementById('dispSiteAddr').textContent = currentProp.address || '—';
+      // 契約書名・かなの初期値（新規時のみ）
+      if (!CONTRACT_ID) {
+        document.getElementById('contractName').value     = currentProp.name      || '';
+        document.getElementById('contractNameKana').value = currentProp.name_kana || '';
+      }
+    }
+
+    // 顧客取得
+    if (currentProp?.customer_id) {
+      const cr = await fetch(`${API}/customers?id=eq.${currentProp.customer_id}`, { headers: HEADERS });
+      const custs = await cr.json();
+      const cust = custs[0];
+      if (cust) document.getElementById('dispCustName').textContent = cust.name || '—';
+    }
+
+    // スタッフ取得
+    const sr = await fetch(`${API}/staffs?select=id,name,branch&order=name.asc`, { headers: HEADERS });
+    const staffs = sr.ok ? await sr.json() : [];
+    const sel = document.getElementById('staffSelect');
+    staffs.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s.id;
+      o.textContent = s.branch ? `${s.name}（${s.branch}）` : s.name;
+      sel.appendChild(o);
+    });
+    // 営業責任者を初期選択
+    if (currentProp?.sales_staff_id) sel.value = currentProp.sales_staff_id;
+
+    // 見積取得
+    const er = await fetch(`${API}/estimates?property_id=eq.${PROPERTY_ID}&order=created_at.asc`, { headers: HEADERS });
+    allEstimates = er.ok ? await er.json() : [];
+
+    // deal_info（売上予定金額を初期値として使用）
+    const dr = await fetch(`${API}/deal_info?property_id=eq.${PROPERTY_ID}`, { headers: HEADERS });
+    const deals = dr.ok ? await dr.json() : [];
+    const deal = deals[0];
+    initialAmount = deal?.expected_revenue ?? null;
+    if (initialAmount != null) {
+      document.getElementById('amountTax').value = initialAmount;
+      calcAmounts('tax');
+    }
+
+    // shodan-kanriから渡されたチェック済み見積ID（URLパラメータ）
+    const shodanEstIds = p.get('checked_est_ids');
+    if (shodanEstIds && !CONTRACT_ID) {
+      try {
+        const ids = JSON.parse(decodeURIComponent(shodanEstIds));
+        checkedEstIds = new Set(ids);
+      } catch {}
+    }
+
+    // 既存契約の読み込み
+    if (CONTRACT_ID) {
+      const conr = await fetch(`${API}/contracts?id=eq.${CONTRACT_ID}`, { headers: HEADERS });
+      const cons = conr.ok ? await conr.json() : [];
+      currentContract = cons[0] || null;
+      if (currentContract) loadContractData(currentContract);
+    }
+
+    renderEstimates();
+    updateStatusStyle();
+
+  } catch(e) { console.error('init error:', e); showToast('データ読み込みに失敗しました', 'error'); }
+})();
+
+function loadContractData(c) {
+  document.getElementById('contractName').value     = c.contract_name     || '';
+  document.getElementById('contractNameKana').value = c.contract_name_kana || '';
+  document.getElementById('contractDate').value     = c.contract_date      || '';
+  document.getElementById('schedStart').value       = c.scheduled_start    || '';
+  document.getElementById('schedEnd').value         = c.scheduled_end      || '';
+  document.getElementById('amountTax').value        = c.invoice_amount_tax != null ? c.invoice_amount_tax : '';
+  document.getElementById('taxRate').value          = c.tax_rate != null   ? c.tax_rate : 10;
+  document.getElementById('contractNote').value     = c.note               || '';
+  if (c.staff_id) document.getElementById('staffSelect').value = c.staff_id;
+  const radio = document.querySelector(`input[name="contractStatus"][value="${c.status||'作成中'}"]`);
+  if (radio) { radio.checked = true; updateStatusStyle(); }
+  if (c.estimate_ids) {
+    try { checkedEstIds = new Set(JSON.parse(c.estimate_ids)); } catch {}
+  }
+  calcAmounts('tax');
+}
+
+// ── 契約状況ラジオスタイル ──
+function updateStatusStyle() {
+  const val = document.querySelector('input[name="contractStatus"]:checked')?.value || '';
+  document.getElementById('lbl-sakusei').className = 'status-radio-label' + (val==='作成中' ? ' checked-sakusei' : '');
+  document.getElementById('lbl-keiyaku').className = 'status-radio-label' + (val==='契約済' ? ' checked-keiyaku' : '');
+  document.getElementById('lbl-shicchu').className  = 'status-radio-label' + (val==='失注'  ? ' checked-shicchu'  : '');
+}
+
+// ── 見積テーブル描画 ──
+function renderEstimates() {
+  const tbody = document.getElementById('estTbody');
+  if (!allEstimates.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:#ccc;font-size:13px;">見積データがありません</td></tr>';
+    return;
+  }
+  const fmtNum = n => n != null ? Number(n).toLocaleString('ja-JP') : '—';
+  tbody.innerHTML = allEstimates.map((est, i) => {
+    const profit = (est.total_amount > 0 && est.cost_amount != null)
+      ? ((est.total_amount - est.cost_amount) / est.total_amount * 100).toFixed(1) + '%' : '—';
+    const isChecked = checkedEstIds.has(est.id);
+    return `<tr>
+      <td style="text-align:center;"><input type="checkbox" ${isChecked?'checked':''} onchange="onEstCheck('${est.id}',this)"></td>
+      <td style="text-align:center;color:#888;">${i+1}</td>
+      <td style="font-size:12px;">${escHtml(est.estimate_no||'—')}</td>
+      <td style="font-weight:500;">${escHtml(est.plan_name||'—')}</td>
+      <td>${escHtml(est.status||'見積中')}</td>
+      <td class="right">${fmtNum(est.total_amount)}</td>
+      <td class="right">${fmtNum(est.cost_amount)}</td>
+      <td class="right">${profit}</td>
+      <td style="text-align:center;">${isChecked
+        ? `<button class="est-reflect-btn" onclick="applyEstimate('${est.id}')">反映</button>` : ''
+      }</td>
+    </tr>`;
+  }).join('');
+}
+
+function onEstCheck(estId, cb) {
+  if (cb.checked) checkedEstIds.add(estId);
+  else checkedEstIds.delete(estId);
+  renderEstimates();
+  // チェック変化のたびに請負金額を自動更新
+  syncAmountFromChecked();
+}
+
+function syncAmountFromChecked() {
+  if (checkedEstIds.size === 0) {
+    // チェックが全部外れたら初期値（deal_infoの売上予定金額）に戻す
+    document.getElementById('amountTax').value = initialAmount != null ? initialAmount : '';
+    calcAmounts('tax');
+    return;
+  }
+  let total = 0;
+  checkedEstIds.forEach(id => {
+    const est = allEstimates.find(e => e.id === id);
+    if (est?.total_amount) total += Number(est.total_amount);
+  });
+  document.getElementById('amountTax').value = total;
+  calcAmounts('tax');
+}
+
+function applyEstimate(estId) {
+  syncAmountFromChecked();
+  showToast('見積金額を反映しました');
+}
+
+// ── 金額計算 ──
+function calcAmounts(changed) {
+  const rate    = parseFloat(document.getElementById('taxRate').value) || 10;
+  const taxEl   = document.getElementById('amountTax');
+  const exEl    = document.getElementById('amountExTax');
+  const taxAmtEl = document.getElementById('taxAmount');
+
+  if (changed === 'tax' || changed === 'rate') {
+    const incl = parseFloat(taxEl.value) || 0;
+    const excl = Math.round(incl / (1 + rate/100));
+    const tax  = incl - excl;
+    exEl.value     = excl || '';
+    taxAmtEl.value = tax  || '';
+  } else if (changed === 'ex') {
+    const excl = parseFloat(exEl.value) || 0;
+    const incl = Math.round(excl * (1 + rate/100));
+    const tax  = incl - excl;
+    taxEl.value    = incl || '';
+    taxAmtEl.value = tax  || '';
+  }
+}
+
+// ── 保存 ──
+async function saveContract(silent=false) {
+  const contractName = document.getElementById('contractName').value.trim();
+  const status       = document.querySelector('input[name="contractStatus"]:checked')?.value || '作成中';
+  const contractDate = document.getElementById('contractDate').value;
+  const staffId      = document.getElementById('staffSelect').value;
+
+  if (!contractName) { showToast('契約書名を入力してください', 'error'); document.getElementById('contractName').focus(); return; }
+  if (!contractDate) { showToast('契約日を入力してください', 'error'); return; }
+  if (!staffId)      { showToast('担当者を選択してください', 'error'); return; }
+
+  // チェック済み見積の台帳No（連番）と原価合計を収集
+  const checkedLedgerNos = [];
+  let targetEstimateCost = 0;
+  allEstimates.forEach((est, i) => {
+    if (checkedEstIds.has(est.id)) {
+      checkedLedgerNos.push(String(i + 1));
+      if (est.cost_amount != null) targetEstimateCost += Number(est.cost_amount);
+    }
+  });
+
+  const data = {
+    property_id:       PROPERTY_ID,
+    contract_name:     contractName,
+    contract_name_kana: document.getElementById('contractNameKana').value.trim() || null,
+    status,
+    contract_date:     contractDate || null,
+    staff_id:          staffId      || null,
+    scheduled_start:   document.getElementById('schedStart').value || null,
+    scheduled_end:     document.getElementById('schedEnd').value   || null,
+    invoice_amount_tax: parseFloat(document.getElementById('amountTax').value)   || null,
+    invoice_amount:    parseFloat(document.getElementById('amountExTax').value)  || null,
+    tax_amount:        parseFloat(document.getElementById('taxAmount').value)    || null,
+    tax_rate:          parseFloat(document.getElementById('taxRate').value)      || 10,
+    note:              document.getElementById('contractNote').value.trim()      || null,
+    estimate_ids:      checkedEstIds.size ? JSON.stringify([...checkedEstIds]) : null,
+    target_estimate_no:   checkedLedgerNos.length ? checkedLedgerNos.join(', ') : null,
+    target_estimate_cost: targetEstimateCost > 0 ? targetEstimateCost : null,
+    reflect:           status === '契約済',
+    updated_at:        new Date().toISOString()
+  };
+
+  try {
+    let res;
+    if (currentContract?.id) {
+      res = await fetch(`${API}/contracts?id=eq.${currentContract.id}`,
+        { method:'PATCH', headers: HEADERS, body: JSON.stringify(data) });
+    } else {
+      data.created_at = new Date().toISOString();
+      res = await fetch(`${API}/contracts`,
+        { method:'POST', headers: HEADERS, body: JSON.stringify(data) });
+    }
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+    const saved = await res.json();
+    currentContract = saved[0] || { ...currentContract, ...data };
+    const newParams = new URLSearchParams(location.search);
+    newParams.set('contract_id', currentContract.id);
+    history.replaceState(null, '', '?' + newParams.toString());
+    if (!silent) showToast('保存しました');
+    return true;
+  } catch(e) {
+    console.error(e);
+    showToast('保存に失敗しました: ' + e.message, 'error');
+    return false;
+  }
+}
+
+function openInfoPanel(type) { showToast(`${type === 'prop' ? '物件' : type === 'cust' ? '顧客' : '商談'}情報パネルは準備中です`); }
+
+async function deleteContract() {
+  if (!currentContract?.id) {
+    showToast('保存済みの契約書がありません', 'error');
+    return;
+  }
+  const confirmed = confirm('契約書を削除します。削除するともとに戻すことはできません。削除してもよろしいですか？');
+  if (!confirmed) return;
+  try {
+    const res = await fetch(`${API}/contracts?id=eq.${currentContract.id}`, {
+      method: 'DELETE', headers: HEADERS
+    });
+    if (!res.ok) throw new Error('削除失敗 ' + res.status);
+    showToast('削除しました');
+    setTimeout(() => { window.location.href = BACK_URL; }, 1000);
+  } catch(e) {
+    showToast('削除に失敗しました: ' + e.message, 'error');
+  }
+}
+
+async function outputContract() {
+  // まず保存
+  const saved = await saveContract(true);
+  if (!saved) return;
+  // 契約書出力画面へ
+  const params = new URLSearchParams({
+    property_id: PROPERTY_ID,
+    back: location.href
+  });
+  if (currentContract?.id) params.set('contract_id', currentContract.id);
+  window.location.href = `keiyaku-output.html?${params.toString()}`;
+}
+</script>
+</body>
+</html>
